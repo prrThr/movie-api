@@ -1,47 +1,34 @@
-from fastapi import FastAPI
-from fastapi.responses import PlainTextResponse
-from models import MovieRequest, MovieResponse
-from fetcher import fetch_omdb, fetch_tmdb_reviews
+from fetcher import fetch_omdb, fetch_tmdb
 import asyncio
 
-app = FastAPI()
+async def main():
+    title = input("Digite o nome do filme (em inglês): ")
+    year = int(input("Digite o ano do filmes: "))
 
-@app.get("/")
-def home():
-    return {"message": "API de agregação de filmes"}
+    omdb_task = fetch_omdb(title, year)
+    sinopse = await asyncio.gather(omdb_task)
+    sinopse = sinopse[0]
 
-@app.post("/movie", response_model=MovieResponse)
-async def get_movie_info(request: MovieRequest):
-    omdb_task = fetch_omdb(request.title, request.year)     
-    tmdb_task = fetch_tmdb_reviews(request.title)
+    if sinopse["titulo"] == "Desconhecido" or sinopse["ano"] == 0 or sinopse["sinopse"] == "Sinopse não disponível":
+        print("\nFilme não encontrado. Verifique o nome e o ano e tente novamente.")
+        return
 
-    print(f"{tmdb_task}")
-    sinopse, = await asyncio.gather(omdb_task)
-    reviews, = await asyncio.gather(tmdb_task)
+    tmdb_task = fetch_tmdb(title)
+    reviews = await asyncio.gather(tmdb_task)
+    reviews = reviews[0]
 
-    #result, = await asyncio.gather(omdb_task)
+    print("\n===== Informações do Filme =====")
+    print(f"Título: {sinopse['titulo']}")
+    print(f"Ano: {sinopse['ano']}")
+    print(f"Sinopse: {sinopse['sinopse']}\n")
 
-        
-    #formatted_response = f"Título: {result['titulo']}\nAno: {result['ano']}\nSinopse: {result['sinopse']}"
-    #return PlainTextResponse(formatted_response)
-    #return MovieResponse(
-    #    titulo=result["titulo"],  # Usa os dados do dicionário retornado
-    #    ano=result["ano"],
-    #    sinopse=result["sinopse"]
-    #) 
+    print("===== Reviews =====")
+    for review in reviews:
+        print(f"Autor: {review['author']}")
+        print(f"Nota: {review['rating']}")
+        print(f"Descrição: {review['content']}\n")
+        print("-" * 75)
 
-"""
-@app.post("/movie", response_model=MovieResponse)
-async def get_movie_info(request: MovieRequest):
-    omdb_task = fetch_omdb(request.title, request.year)
-    tmdb_task = fetch_tmdb_reviews(request.title)
-     
-    sinopse, reviews = await asyncio.gather(omdb_task, tmdb_task)
+if __name__ == "__main__":
+    asyncio.run(main())
 
-    return MovieResponse(
-        titulo=request.title,
-        ano=request.year,
-        sinopse=sinopse,
-        reviews=reviews
-    )
-"""
