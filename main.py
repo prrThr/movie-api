@@ -6,16 +6,13 @@ async def main():
     year = int(input("Digite o ano do filmes: "))
 
     omdb_task = fetch_omdb(title, year)
-    sinopse = await asyncio.gather(omdb_task)
-    sinopse = sinopse[0]
+    tmdb_task = fetch_tmdb(title)
+
+    sinopse, reviews = await asyncio.gather(omdb_task, tmdb_task)
 
     if sinopse["titulo"] == "Desconhecido" or sinopse["ano"] == 0 or sinopse["sinopse"] == "Sinopse não disponível":
         print("\nFilme não encontrado. Verifique o nome e o ano e tente novamente.")
         return
-
-    tmdb_task = fetch_tmdb(title)
-    reviews = await asyncio.gather(tmdb_task)
-    reviews = reviews[0]
 
     print("\n===== Informações do Filme =====")
     print(f"Título: {sinopse['titulo']}")
