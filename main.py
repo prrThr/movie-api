@@ -13,11 +13,17 @@ def home():
 @app.post("/movie", response_model=MovieResponse)
 async def get_movie_info(request: MovieRequest):
     omdb_task = fetch_omdb(request.title, request.year)     
-    result, = await asyncio.gather(omdb_task)  # Desempacota a tupla para pegar o dicionário
+    tmdb_task = fetch_tmdb_reviews(request.title)
+
+    print(f"{tmdb_task}")
+    sinopse, = await asyncio.gather(omdb_task)
+    reviews, = await asyncio.gather(tmdb_task)
+
+    #result, = await asyncio.gather(omdb_task)
 
         
-    formatted_response = f"Título: {result['titulo']}\nAno: {result['ano']}\nSinopse: {result['sinopse']}"
-    return PlainTextResponse(formatted_response)
+    #formatted_response = f"Título: {result['titulo']}\nAno: {result['ano']}\nSinopse: {result['sinopse']}"
+    #return PlainTextResponse(formatted_response)
     #return MovieResponse(
     #    titulo=result["titulo"],  # Usa os dados do dicionário retornado
     #    ano=result["ano"],
