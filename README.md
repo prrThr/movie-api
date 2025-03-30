@@ -20,7 +20,7 @@
 ```
 
 ### Vídeo
-[Link do vídeo postado no Youtube]()
+[Link do vídeo postado no Youtube](https://youtu.be/Wy2NPFzFFz0)
 
 ## Requisitos técnicos
 
